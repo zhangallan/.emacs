@@ -36,12 +36,6 @@
 (global-visual-line-mode t)
 (setq delete-by-moving-to-trash t)
 
-                                        ; Trying out Electric Operator Mode
-(require 'electric-operator)
-(add-hook 'prog-mode-hook #'electric-operator-mode)
-(add-hook 'elisp-mode #'electric-operator-mode)
-(add-hook 'ado-mode-hook #'electric-operator-mode)
-
 					; Color theme
 (setq color-theme-is-cumulative t)
 (setq color-theme-is-global t)
@@ -484,7 +478,9 @@
 (require 'spaceline-config)
 (spaceline-spacemacs-theme)
 (spaceline-helm-mode)
-
+(setq spaceline-highlight-face-func 'spaceline-highlight-face-evil-state)
+(setq powerline-default-separator 'arrow)
+(spaceline-toggle-buffer-size)
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CUSTOM STUFF. DON'T TOUCH ;;;;;;;;;;;;;;;;;;;;
 (custom-set-variables
