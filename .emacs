@@ -18,7 +18,10 @@
                                         ; Allows me to see several lines below/above when scrolling
 (setq scroll-margin 5)
                                         ; Line numbers
-(global-linum-mode 1)
+(require 'linum-relative)
+
+(linum-relative-global-mode)
+(setq linum-relative-current-symbol "")
 
                                         ; Reduces size of kill ring to make it faster with helm
 (setq kill-ring-max 20)
@@ -26,14 +29,28 @@
                                         ; Disable scroll bars. UGLY!!!
 (scroll-bar-mode -1)
 
+(blink-cursor-mode 0)
+
 (global-aggressive-indent-mode nil)
 (global-company-mode t)
 (global-visual-line-mode t)
 (setq delete-by-moving-to-trash t)
 
+                                        ; Trying out Electric Operator Mode
+(require 'electric-operator)
+(add-hook 'prog-mode-hook #'electric-operator-mode)
+(add-hook 'elisp-mode #'electric-operator-mode)
+(add-hook 'ado-mode-hook #'electric-operator-mode)
+
 					; Color theme
 (setq color-theme-is-cumulative t)
 (setq color-theme-is-global t)
+
+                                        ; font
+(set-face-attribute 'default nil :font "Source Code Pro Light 8")
+
+                                        ; Theme
+(load-theme 'material t)
 
                                         ; Offset the number by two spaces to work around some weird fringe glitch. See: http://stackoverflow.com/questions/4920210/what-causes-this-graphical-error-in-emacs-with-linum-mode-on-os-x
 (setq linum-format "  %d ")
@@ -57,11 +74,13 @@
 (evil-mode 1)
 
 ;; Changing default modes for some major modes
-(loop for (mode . state) in '((shell-mode . insert)
-                              (help-mode . emacs)
-                              (dired-mode . emacs)
-                              (wdired-mode . normal))
-      do (evil-set-initial-state mode state))
+(cl-loop for (mode . state) in '((shell-mode . insert)
+				 (help-mode . emacs)
+				 (dired-mode . emacs)
+				 (wdired-mode . normal)
+				 (text-mode . insert)
+				 (org-mode . emacs))
+	 do (evil-set-initial-state mode state))
 
 ;; Changing some key bindings in insert mode for convenience
 (define-key evil-insert-state-map "\C-y" 'yank)
@@ -94,6 +113,22 @@
 (require 'evil-surround)
 (global-evil-surround-mode 1)
 
+(require 'evil-quickscope)
+(add-hook 'prog-mode-hook 'turn-on-evil-quickscope-always-mode)
+(add-hook 'ado-mode-hook 'turn-on-evil-quickscope-always-mode)
+
+(require 'evil-snipe)
+(evil-snipe-mode 1)
+(evil-snipe-override-mode 1)
+(add-hook 'magit-mode-hook 'turn-off-evil-snipe-override-mode)
+(setq evil-snipe-scope 'line)
+(setq evil-spillover-scope 'visible)
+
+(require 'vimish-fold)
+(require 'evil-vimish-fold)
+(evil-vimish-fold-mode 1)
+
+
                                         ; Rainbow Delimiters
 (rainbow-delimiters-mode 1)
 (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
@@ -121,6 +156,12 @@
                                         ; Helm mode. Superceeds ido mode above?
 (require 'helm)
 (require 'helm-config)
+
+;; Helm swoop. Replacing helm-occur.
+(require 'helm-swoop)
+(global-set-key (kbd "C-c o") 'helm-swoop)
+(setq helm-swoop-use-fuzzy-match t)
+(define-key evil-motion-state-map (kbd "C-s") 'helm-swoop-from-evil-search)
 
 (helm-mode 1)
 
@@ -154,8 +195,6 @@
 (global-set-key (kbd "M-y") 'helm-show-kill-ring)
 
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
-
-(global-set-key (kbd "C-c o") 'helm-occur)
 
 (setq helm-buffer-max-length 60)
 
@@ -225,7 +264,7 @@
 (setq comint-scroll-to-bottom-on-output t)
 (setq comint-move-point-for-output t)
 
-                                        ; ado mode for Stat
+                                        ; ado mode for Stata
 (add-to-list 'load-path "~/.emacs.d/ado-mode-1.14.1.0/lisp")
 (require 'ado-mode)
 
@@ -262,6 +301,8 @@
 
                                         ; Magit
 (require 'magit)
+
+(global-set-key (kbd "C-x g") 'magit-status)
 
 					; Recentf - For easily getting recent files
 (require 'recentf)
@@ -436,6 +477,15 @@
 (diminish 'smartparens-mode)
 (diminish 'visual-line-mode)
 
+                                        ; flycheck
+(global-flycheck-mode)
+
+                                        ; Powerline stuff
+(require 'spaceline-config)
+(spaceline-spacemacs-theme)
+(spaceline-helm-mode)
+
+
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CUSTOM STUFF. DON'T TOUCH ;;;;;;;;;;;;;;;;;;;;
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -528,7 +578,7 @@
  '(weechat-color-list
    (unspecified "#272822" "#49483E" "#A20C41" "#F92672" "#67930F" "#A6E22E" "#968B26" "#E6DB74" "#21889B" "#66D9EF" "#A41F99" "#FD5FF0" "#349B8D" "#A1EFE4" "#F8F8F2" "#F8F8F0"))
  '(whitespace-action nil)
- '(whitespace-display-mappings
+ '(whitspaceespace-display-mappings
    (quote
     ((space-mark 32
                  [183]
@@ -539,19 +589,22 @@
      (tab-mark 9
                [187 9]
                [92 9])))))
- (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
-  '(default ((t (:family "Courier New" :foundry "outline" :slant normal :weight normal :height 78 :width normal))))
-  '(aw-leading-char-face ((t (:foreground "red" :weight bold :height 2.0))))
-  '(whitespace-empty ((t nil)))
-  '(whitespace-hspace ((t (:background "gray12" :foreground "#969896"))))
-  '(whitespace-indentation ((t nil)))
-  '(whitespace-line ((t nil)))
-  '(whitespace-space ((t (:background "gray12" :foreground "#969896"))))
-  '(whitespace-space-after-tab ((t nil)))
-  '(whitespace-space-before-tab ((t nil)))
-  '(whitespace-tab ((t nil)))
-  '(whitespace-trailing ((t nil))))
+
+;; TODO
+;; Commenting out for now as I have my own custom stuff, but will return to see what these options are later
+;; (custom-set-faces
+;;  ;; custom-set-faces was added by Custom.
+;;  ;; If you edit it by hand, you could mess it up, so be careful.
+;;  ;; Your init file should contain only one such instance.
+;;  ;; If there is more than one, they won't work right.
+;;  '(default ((t (:family "Courier New" :foundry "outline" :slant normal :weight normal :height 78 :width normal))))
+;;  '(aw-leading-char-face ((t (:foreground "red" :weight bold :height 2.0))))
+;;  '(whitespace-empty ((t nil)))
+;;  '(whitespace-hspace ((t (:background "gray12" :foreground "#969896"))))
+;;  '(whitespace-indentation ((t nil)))
+;;  '(whitespace-line ((t nil)))
+;;  '(whitespace-space ((t (:background "gray12" :foreground "#969896"))))
+;;  '(whitespace-space-after-tab ((t nil)))
+;;  '(whitespace-space-before-tab ((t nil)))
+;;  '(whitespace-tab ((t nil)))
+;;  '(whitespace-trailing ((t nil))))
