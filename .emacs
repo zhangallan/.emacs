@@ -73,7 +73,7 @@
 				 (dired-mode . emacs)
 				 (wdired-mode . normal)
 				 (text-mode . insert)
-				 (org-mode . emacs))
+				 (org-mode . normal))
 	 do (evil-set-initial-state mode state))
 
 ;; Changing some key bindings in insert mode for convenience
@@ -472,7 +472,8 @@
 (diminish 'visual-line-mode)
 
                                         ; flycheck
-(global-flycheck-mode)
+;; Temporarily disabled. Seems to hang emacs
+;; (global-flycheck-mode)
 
                                         ; Powerline stuff
 (require 'spaceline-config)
@@ -481,6 +482,7 @@
 (setq spaceline-highlight-face-func 'spaceline-highlight-face-evil-state)
 (setq powerline-default-separator 'arrow)
 (spaceline-toggle-buffer-size)
+(spaceline-compile)
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CUSTOM STUFF. DON'T TOUCH ;;;;;;;;;;;;;;;;;;;;
 (custom-set-variables
