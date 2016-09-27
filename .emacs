@@ -37,12 +37,19 @@
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (setq package-enable-at-startup nil)
 
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+(setq use-package-verbose t)
+(require 'use-package)
+(require 'diminish)
+
 ;;;;;;;;; UI Settings
                                         ; Line numbers
-(require 'linum-relative)
-
+(use-package linum-relative
+  :init
+  (setq linum-relative-current-symbol "")
+  )
 (linum-relative-global-mode)
-(setq linum-relative-current-symbol "")
 
 					; Color theme
 (setq color-theme-is-cumulative t)
@@ -470,7 +477,6 @@
 (setq TeX-auto-save t) ; Enable parse on save
 (setq TeX-parse-self t) ; Enable parse on load
 
-(require 'diminish)
 (diminish 'helm-mode)
 (diminish 'ycmd-mode)
 (diminish 'undo-tree-mode)
