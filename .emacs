@@ -24,11 +24,21 @@
 (blink-cursor-mode 0)
 
                                         ; I like replacing highlighted things tyvm
+(delete-selection-mode 1)
+
 (global-visual-line-mode t)
 (setq delete-by-moving-to-trash t)
 (setq sentence-end-double-space nil)
 (tab-always-indent t)
 (tool-bar-mode nil)
+
+                                        ; Comint stuff for good interpreter settings
+(setq comint-scroll-to-bottom-on-input t)
+(setq comint-scroll-to-bottom-on-output t)
+(setq comint-move-point-for-output t)
+
+					; Changing backup directory to avoid clutter
+(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 
                                         ; Initializing Package essentials
                                         ; Getting additional package repos
@@ -42,6 +52,9 @@
 (setq use-package-verbose t)
 (require 'use-package)
 (require 'diminish)
+
+;; Automatic downloading and installing of packages in this file loaded with use-package
+(setq use-package-always-ensure t)
 
 ;;;;;;;;; UI Settings
                                         ; Line numbers
@@ -59,6 +72,7 @@
 (set-face-attribute 'default nil :font "Source Code Pro Light 8")
 
                                         ; Theme
+(use-package material-theme)
 (load-theme 'material t)
 
                                         ; Offset the number by two spaces to work around some weird fringe glitch. See: http://stackoverflow.com/questions/4920210/what-causes-this-graphical-error-in-emacs-with-linum-mode-on-os-x
@@ -69,7 +83,19 @@
                                         ; Doesn't seem to work. Will keep here as reference http://emacs.stackexchange.com/questions/408/synchronize-packages-between-different-machines
 
 					; Evil mode and various configurations for it
-(require 'evil)
+(use-package evil
+  :init
+  (setq evil-disable-insert-state-bindings t)
+
+  ;; Changing color of cursor states so I know what mode I'm in
+  (setq evil-emacs-state-cursor '("red" box))
+  (setq evil-normal-state-cursor '("green" box))
+  (setq evil-visual-state-cursor '("orange" box))
+  (setq evil-insert-state-cursor '("red" bar))
+  (setq evil-replace-state-cursor '("red" bar))
+  (setq evil-operator-state-cursor '("red" hollow))
+  )
+
 (evil-mode 1)
 
 ;; Changing default modes for some major modes
@@ -82,20 +108,13 @@
 	 do (evil-set-initial-state mode state))
 
 ;; Changing some key bindings in insert mode for convenience
-(define-key evil-insert-state-map "\C-y" 'yank)
-(define-key evil-insert-state-map "\C-e" 'end-of-line)
-(define-key evil-insert-state-map "\C-a" 'beginning-of-line)
-
-;; Changing color of cursor states so I know what mode I'm in
-(setq evil-emacs-state-cursor '("red" box))
-(setq evil-normal-state-cursor '("green" box))
-(setq evil-visual-state-cursor '("orange" box))
-(setq evil-insert-state-cursor '("red" bar))
-(setq evil-replace-state-cursor '("red" bar))
-(setq evil-operator-state-cursor '("red" hollow))
+;; I think this is obsoleted by evil-disable-insert-state-bindings?
+;; (define-key evil-insert-state-map "\C-y" 'yank)
+;; (define-key evil-insert-state-map "\C-e" 'end-of-line)
+;; (define-key evil-insert-state-map "\C-a" 'beginning-of-line)
 
 ;; Adding key chord so I don't have to hit escape
-(require 'key-chord)
+(use-package key-chord)
 (key-chord-mode 1)
 (key-chord-define evil-normal-state-map "jk" 'evil-force-normal-state)
 (key-chord-define evil-visual-state-map "jk" 'evil-change-to-previous-state)
@@ -103,44 +122,52 @@
 (key-chord-define evil-replace-state-map "jk" 'evil-normal-state)
 
 ;; Additional packages
+(use-package evil-commentary)
 (evil-commentary-mode)
-(with-eval-after-load 'evil
-  (require 'evil-anzu))
-(evilem-default-keybindings "SPC")
-(add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
 
-(require 'evil-surround)
+(use-package evil-anzu)
+
+(use-package evil-easymotion
+  :init
+  (evilem-default-keybindings "SPC")
+  )
+
+(use-package evil-smartparens
+  :init
+  (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
+  )
+
+(use-package evil-surround)
 (global-evil-surround-mode 1)
 
-(require 'evil-quickscope)
-(add-hook 'prog-mode-hook 'turn-on-evil-quickscope-always-mode)
-(add-hook 'ado-mode-hook 'turn-on-evil-quickscope-always-mode)
+(use-package evil-quickscope
+  :init
+  (add-hook 'prog-mode-hook 'turn-on-evil-quickscope-always-mode)
+  (add-hook 'ado-mode-hook 'turn-on-evil-quickscope-always-mode)
+  )
 
-(require 'evil-snipe)
+(use-package evil-snipe
+  :init
+  (add-hook 'magit-mode-hook 'turn-off-evil-snipe-override-mode)
+  (setq evil-snipe-scope 'line)
+  (setq evil-spillover-scope 'visible)
+  )
 (evil-snipe-mode 1)
 (evil-snipe-override-mode 1)
-(add-hook 'magit-mode-hook 'turn-off-evil-snipe-override-mode)
-(setq evil-snipe-scope 'line)
-(setq evil-spillover-scope 'visible)
 
-(require 'vimish-fold)
-(require 'evil-vimish-fold)
+(use-package vimish-fold)
+(use-package evil-vimish-fold)
 (evil-vimish-fold-mode 1)
 
-
                                         ; Rainbow Delimiters
+(use-package rainbow-delimiters
+  :init
+  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+  )
 (rainbow-delimiters-mode 1)
-(add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
-
-                                        ; Expand region
-(global-set-key (kbd "C-=") 'er/expand-region)
-
-                                        ; Multiple cursors
-
-                                        ; Expand Delete Mode
-(delete-selection-mode 1)
 
 					; IDO mode for better filename completion
+                                        ; Possibly succeeded by helm, but whatever
 
 (ido-mode 1)
 (ido-vertical-mode 1)
@@ -153,107 +180,114 @@
 (add-hook 'ido-setup-hook 'ido-define-keys)
 
                                         ; Projectile
+(use-package projectile
+  :init
+  (setq projectile-completion-system 'helm)
+  (setq projectile-indexing-method 'alien)
+  )
 (projectile-global-mode)
-(setq projectile-completion-system 'helm)
-(setq projectile-indexing-method 'alien)
 
                                         ; Helm mode. Superceeds ido mode above?
-(require 'helm)
-(require 'helm-config)
+(use-package helm
+  :init
+  (require 'helm-config)
+  ;; Helm projectile
+  (helm-projectile-on)
 
-;; Helm projectile
-(helm-projectile-on)
+  ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+  ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+  ;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+  (global-set-key (kbd "C-c h") 'helm-command-prefix)
+  (global-unset-key (kbd "C-x c"))
+
+  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+
+  (setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
+        helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
+        helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+        helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
+        helm-ff-file-name-history-use-recentf t)
+
+  ;; Configuring helm to replace my life
+  (global-set-key (kbd "C-x b") 'helm-mini)
+  (setq helm-buffers-fuzzy-matching t
+        helm-recentf-fuzzy-match    t)
+
+  (global-set-key (kbd "M-x") 'helm-M-x)
+  (setq helm-M-x-fuzzy-match t) ;; optional fuzzy matching for helm-M-x
+
+  (global-set-key (kbd "M-y") 'helm-show-kill-ring)
+
+  (global-set-key (kbd "C-x C-f") 'helm-find-files)
+
+  (setq helm-buffer-max-length 60)
+  )
 
 ;; Helm swoop. Replacing helm-occur.
-(require 'helm-swoop)
-(global-set-key (kbd "C-c o") 'helm-swoop)
-(setq helm-swoop-use-fuzzy-match t)
-(define-key evil-motion-state-map (kbd "C-s") 'helm-swoop-from-evil-search)
+(use-package helm-swoop
+  :init
+  (global-set-key (kbd "C-c o") 'helm-swoop)
+  (setq helm-swoop-use-fuzzy-match t)
+  (define-key evil-motion-state-map (kbd "C-s") 'helm-swoop-from-evil-search)
+  )
 
 (helm-mode 1)
 
-;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
-;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
-;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
-(global-set-key (kbd "C-c h") 'helm-command-prefix)
-(global-unset-key (kbd "C-x c"))
-
-(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
-(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
-(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
-
-(when (executable-find "curl")
-  (setq helm-google-suggest-use-curl-p t))
-
-(setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
-      helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
-      helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
-      helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
-      helm-ff-file-name-history-use-recentf t)
-
-;; Configuring helm to replace my life
-(global-set-key (kbd "C-x b") 'helm-mini)
-(setq helm-buffers-fuzzy-matching t
-      helm-recentf-fuzzy-match    t)
-
-(global-set-key (kbd "M-x") 'helm-M-x)
-(setq helm-M-x-fuzzy-match t) ;; optional fuzzy matching for helm-M-x
-
-(global-set-key (kbd "M-y") 'helm-show-kill-ring)
-
-(global-set-key (kbd "C-x C-f") 'helm-find-files)
-
-(setq helm-buffer-max-length 60)
-
 ;; Changing helm buffer candidate size
-(defun helm-buffer-face-mode ()
-  "Helm buffer face"
-  (interactive)
-  (with-helm-buffer
-    (setq line-spacing 2)
-    (buffer-face-set '(:family "Courier New" :height 75))))
+;; I think this isn't useful?
+;; (defun helm-buffer-face-mode ()
+;;   "Helm buffer face"
+;;   (interactive)
+;;   (with-helm-buffer
+;;     (setq line-spacing 2)
+;;     (buffer-face-set '(:family "Courier New" :height 75))))
 
-(add-hook 'helm-after-initialize-hook 'helm-buffer-face-mode)
+;; (add-hook 'helm-after-initialize-hook 'helm-buffer-face-mode)
 
 					; Flycheck global configs
 ;; (setq-default flycheck-flake8-maximum-line-length 500)
 
-					; ace-jump-mode and ace-jump-buffer
-(define-key global-map (kbd "C-c C-SPC") 'ace-jump-word-mode)
-;; (define-key global-map (kbd "C-u C-c C-SPC") 'ace-jump-char-mode)
-(global-set-key (kbd "C-x o") 'ace-window)
-(setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+(use-package ace-window
+  :init
+  (global-set-key (kbd "C-x o") 'ace-window)
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  )
 
 					; Aggressive Indent Mode
-(global-aggressive-indent-mode 1)
+(use-package aggressive-indent
+  :init
+  (global-aggressive-indent-mode 1)
+  )
 
 					; Smartparens
-(smartparens-global-mode t)
-(require 'smartparens-config)
+(use-package smartparens
+  :init
+  (smartparens-global-mode t)
+  (require 'smartparens-config)
 
-;; Keybinding management
-(define-key smartparens-mode-map (kbd "C-M-f") 'sp-forward-sexp)
-(define-key smartparens-mode-map (kbd "C-M-b") 'sp-backward-sexp)
-
-(define-key smartparens-mode-map (kbd "C-M-n") 'sp-next-sexp)
-(define-key smartparens-mode-map (kbd "C-M-p") 'sp-previous-sexp)
-
-;; Stata additions for smartparens
-(sp-local-pair 'ado-mode "`" "'") ;; Defining locals
-(sp-local-pair 'ado-mode "`\"" "\"'") ;; Escapes in Stata
+  ;; Stata additions for smartparens
+  (sp-local-pair 'ado-mode "`" "'") ;; Defining locals
+  (sp-local-pair 'ado-mode "`\"" "\"'") ;; Escapes in Stata
+  )
 
 					; Flycheck
+;; Disabled because it slows things down and crashes my stuff
 ;; (add-hook 'after-init-hook #'global-flycheck-mode)
 
 					; Yas (Snippet and template support)
-;; Only enable yas snippet in certain modes
-(add-hook 'prog-mode-hook #'yas-minor-mode)
+(use-package yasnippet
+  :init
+  ;; Only enable yas snippet in certain modes
+  (add-hook 'prog-mode-hook #'yas-minor-mode)
 
-(setq yas-wrap-around-region t)
+  (setq yas-wrap-around-region t)
 
-(setq yas-snippet-dirs
-      (quote
-       ("c:/HOME/.emacs.d/elpa/yasnippet-0.8.0/snippets" "c:/HOME/.emacs.d/elpa/elpy-20150830.510/snippets/" "C:/HOME/.emacs.d/yasnippet-snippets" "~/.emacs.d/snippets")))
+  (setq yas-snippet-dirs
+        (quote
+         ("c:/HOME/.emacs.d/elpa/yasnippet-0.8.0/snippets" "c:/HOME/.emacs.d/elpa/elpy-20150830.510/snippets/" "C:/HOME/.emacs.d/yasnippet-snippets" "~/.emacs.d/snippets")))
+  )
 
 					;Changing key to ;;;; Depreciated!!! Might not need it anymore if company does not use tab for auto-complete
 ;; (define-key yas-minor-mode-map (kbd "<tab>") nil)
@@ -261,79 +295,73 @@
 ;; (define-key yas-minor-mode-map (kbd "<C-tab>") 'yas-expand)
 
 					; ESS for R and stuff
-
-(setq ess-eval-visibly (quote nowait))
-(setq ess-smart-S-assign-key "")
-(setq ess-swv-pdflatex-commands (quote ("pdflatex")))
-(setq ess-swv-processor (quote knitr))
-
-(setq comint-scroll-to-bottom-on-input t)
-(setq comint-scroll-to-bottom-on-output t)
-(setq comint-move-point-for-output t)
+(use-package ess
+  :init
+  (setq ess-eval-visibly (quote nowait))
+  (setq ess-smart-S-assign-key "")
+  (setq ess-swv-pdflatex-commands (quote ("pdflatex")))
+  (setq ess-swv-processor (quote knitr))
+  )
 
                                         ; ado mode for Stata
 (add-to-list 'load-path "~/.emacs.d/ado-mode-1.14.1.0/lisp")
-(require 'ado-mode)
+(use-package ado-mode)
 
 					; Org-Mode and RefTex set up
-(require 'org)
-
-(defun org-mode-reftex-setup ()
-  (load-library "reftex")
-  (and (buffer-file-name) (file-exists-p (buffer-file-name))
-       (progn
+(use-package org
+  :init
+  (defun org-mode-reftex-setup ()
+    (load-library "reftex")
+    (and (buffer-file-name) (file-exists-p (buffer-file-name))
+         (progn
 					;enable auto-revert-mode to update reftex when bibtex file changes on disk
-	 (global-auto-revert-mode t)
-	 (reftex-parse-all)
+           (global-auto-revert-mode t)
+           (reftex-parse-all)
 
                                         ; Add a custom reftex cite format to insert links
-         (reftex-set-cite-format "** [[papers:%l][%2a %y]]: %t \n")
+           (reftex-set-cite-format "** [[papers:%l][%2a %y]]: %t \n")
+           )
          )
-       )
     (define-key org-mode-map (kbd "C-c )") 'reftex-citation)
-  )
+    )
 
-(add-hook 'org-mode-hook 'org-mode-reftex-setup)
+  (add-hook 'org-mode-hook 'org-mode-reftex-setup)
 
-(setq org-link-abbrev-alist '(("papers" . "C:\\Users\\Allan Zhang\\Dropbox\\School Work\\Economic Papers\\%s.pdf")))
+  (setq org-link-abbrev-alist '(("papers" . "C:\\Users\\Allan Zhang\\Dropbox\\School Work\\Economic Papers\\%s.pdf")))
 
 					; Suggested hotkeys. See documentation
-(global-set-key "\C-cl" 'org-store-link)
-(global-set-key "\C-cc" 'org-capture)
-(global-set-key "\C-ca" 'org-agenda)
-(global-set-key "\C-cb" 'org-iswitchb)
-
-					; Changing backup directory to avoid clutter
-(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+  (global-set-key "\C-cl" 'org-store-link)
+  (global-set-key "\C-cc" 'org-capture)
+  (global-set-key "\C-ca" 'org-agenda)
+  (global-set-key "\C-cb" 'org-iswitchb)
+  )
 
                                         ; Magit
-(require 'magit)
-
-(global-set-key (kbd "C-x g") 'magit-status)
+(use-package magit
+  :init
+  (global-set-key (kbd "C-x g") 'magit-status)
+  )
 
 					; Recentf - For easily getting recent files
-(require 'recentf)
-(global-set-key (kbd "C-x C-r") 'ido-recentf-open) ;; get rid of `find-file-read-only' and replace it with something more useful.
+(use-package recentf
+  :init
+  (global-set-key (kbd "C-x C-r") 'ido-recentf-open) ;; get rid of `find-file-read-only' and replace it with something more useful.
+  (setq recentf-max-saved-items 50) ; 50 files ought to be enough.
+  ;; Regex to ignore some files
+  (add-to-list 'recentf-exclude "\\.el\\'")
+  (add-to-list 'recentf-exclude "\\.log\\'")
+  (add-to-list 'recentf-exclude "\\.out\\'")
+  (add-to-list 'recentf-exclude "\\.aux\\'")
 
+  (defun ido-recentf-open ()
+    "Use `ido-completing-read' to \\[find-file] a recent file"
+    (interactive)
+    (if (find-file (ido-completing-read "Find recent file: " recentf-list))
+        (message "Opening file...")
+      (message "Aborting")))
+  )
 (recentf-mode t) ;; enable recent files mode.
 
-(setq recentf-max-saved-items 50) ; 50 files ought to be enough.
-
-;; Regex to ignore some files
-(add-to-list 'recentf-exclude "\\.el\\'")
-(add-to-list 'recentf-exclude "\\.log\\'")
-(add-to-list 'recentf-exclude "\\.out\\'")
-(add-to-list 'recentf-exclude "\\.aux\\'")
-
-(defun ido-recentf-open ()
-  "Use `ido-completing-read' to \\[find-file] a recent file"
-  (interactive)
-  (if (find-file (ido-completing-read "Find recent file: " recentf-list))
-      (message "Opening file...")
-    (message "Aborting")))
-
-                                        ; haskell-mode
-(add-hook 'haskell-mode-hook 'haskell-indentation-mode)
 					; Python
 (setq python-check-command "flake8")
 (setq python-indent-guess-indent-offset nil)
@@ -345,61 +373,66 @@
       "-i C:\\Users\\azhang1\\AppData\\Local\\Programs\\Python\\Python35\\Scripts\\ipython.exe")
 
 					; Elpy for Python
+(use-package elpy
+  :init
+  (setq elpy-modules
+        (quote
+         (elpy-module-eldoc elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-sane-defaults)))
+  (setq elpy-rpc-backend nil)
+  (setq elpy-rpc-python-command "pythonw")
+
+  (define-key elpy-mode-map (kbd "C-c C-c") 'elpy-shell-send-region-or-buffer)
+  )
 (elpy-enable)
 
-(setq elpy-modules
-      (quote
-       (elpy-module-eldoc elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-sane-defaults)))
-(setq elpy-rpc-backend nil)
-(setq elpy-rpc-python-command "pythonw")
-
-(define-key elpy-mode-map (kbd "C-c C-c") 'elpy-shell-send-region-or-buffer)
-
                                         ; ycmd Config for use with company mode
-(require 'ycmd)
+(use-package ycmd
+  :init
+  (set-variable 'ycmd-server-command '("python" "-u" "C:\\HOME\\ycmd-master\\ycmd\\ycmd"))
 
-(set-variable 'ycmd-server-command '("python" "-u" "C:\\HOME\\ycmd-master\\ycmd\\ycmd"))
+  ;; Adding ycmd completion to other modes
+  (add-to-list 'ycmd-file-type-map '(ado-mode "generic"))
+  )
 
-;; Adding ycmd completion to other modes
-(add-to-list 'ycmd-file-type-map '(ado-mode "generic"))
+(use-package company
+  :init
+  (global-set-key (kbd "<C-tab>") 'company-complete)
 
-(global-company-mode t)
+  ;; Setting hooks for company mode
+  (add-hook 'ado-mode-hook (lambda () set (make-local-variable 'company-backends) '(company-dabbrev)))
 
-(require 'company-ycmd)
+  (setq company-auto-complete nil)
+  (setq company-dabbrev-downcase nil)
+  (setq company-dabbrev-ignore-case nil)
+  (setq company-dabbrev-other-buffers t)
+  (setq company-idle-delay 0.2)
+  (setq company-minimum-prefix-length 2)
+  (setq company-show-numbers t)
+  ;; Add yasnippet support for all company backends
+  ;; https://github.com/syl20bnr/spacemacs/pull/179
+  (defvar company-mode/enable-yas t
+    "Enable yasnippet for all backends.")
+  (defun company-mode/backend-with-yas (backend)
+    (if (or (not company-mode/enable-yas) (and (listp backend) (member 'company-yasnippet backend)))
+        backend
+      (append (if (consp backend) backend (list backend))
+              '(:with company-yasnippet))))
+
+  (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
+  )
+(add-hook 'after-init-hook 'global-company-mode)
+
+(use-package company-ycmd
+  :init
+  (add-to-list 'company-backends 'company-ycmd)
+  )
 (company-ycmd-setup)
-
-(add-to-list 'company-backends 'company-ycmd)
 
 (add-hook 'after-init-hook #'global-ycmd-mode)
 
 					; Company Mode Configs
-(add-hook 'after-init-hook 'global-company-mode)
-(require 'company-auctex)
+(use-package company-auctex)
 (company-auctex-init)
-
-(global-set-key (kbd "<C-tab>") 'company-complete)
-
-;; Setting hooks for company mode
-(add-hook 'ado-mode-hook (lambda () set (make-local-variable 'company-backends) '(company-dabbrev)))
-
-(setq company-auto-complete nil)
-(setq company-dabbrev-downcase nil)
-(setq company-dabbrev-ignore-case nil)
-(setq company-dabbrev-other-buffers t)
-(setq company-idle-delay 0.2)
-(setq company-minimum-prefix-length 2)
-(setq company-show-numbers t)
-;; Add yasnippet support for all company backends
-;; https://github.com/syl20bnr/spacemacs/pull/179
-(defvar company-mode/enable-yas t
-  "Enable yasnippet for all backends.")
-(defun company-mode/backend-with-yas (backend)
-  (if (or (not company-mode/enable-yas) (and (listp backend) (member 'company-yasnippet backend)))
-      backend
-    (append (if (consp backend) backend (list backend))
-            '(:with company-yasnippet))))
-
-(setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
 
 ;; Fixes conflicts with tab usage between company and yasnippets
 ;; From: http://emacs.stackexchange.com/questions/7908/how-to-make-yasnippet-and-company-work-nicer
@@ -408,8 +441,8 @@
     (if (looking-at "\\_>") t
       (backward-char 1)
       (if (looking-at "\\.") t
-    (backward-char 1)
-    (if (looking-at "->") t nil)))))
+        (backward-char 1)
+        (if (looking-at "->") t nil)))))
 
 (defun do-yas-expand ()
   (let ((yas/fallback-behavior 'return-nil))
@@ -474,28 +507,23 @@
 (define-key yas-keymap (kbd "C-g") 'abort-company-or-yas)
 
                                         ; AUCTeX Config
-(setq TeX-auto-save t) ; Enable parse on save
-(setq TeX-parse-self t) ; Enable parse on load
-
-(diminish 'helm-mode)
-(diminish 'ycmd-mode)
-(diminish 'undo-tree-mode)
-(diminish 'evil-commentary-mode)
-(diminish 'smartparens-mode)
-(diminish 'visual-line-mode)
-
-                                        ; flycheck
-;; Temporarily disabled. Seems to hang emacs
-;; (global-flycheck-mode)
+(use-package auctex
+  :init
+  (setq TeX-auto-save t) ; Enable parse on save
+  (setq TeX-parse-self t) ; Enable parse on load
+  )
 
                                         ; Powerline stuff
-(require 'spaceline-config)
-(spaceline-spacemacs-theme)
-(spaceline-helm-mode)
-(setq spaceline-highlight-face-func 'spaceline-highlight-face-evil-state)
-(setq powerline-default-separator 'arrow)
-(spaceline-toggle-buffer-size)
-(spaceline-compile)
+(use-package spaceline
+  :init
+  (require 'spaceline-config)
+  (spaceline-spacemacs-theme)
+  (spaceline-helm-mode)
+  (setq spaceline-highlight-face-func 'spaceline-highlight-face-evil-state)
+  (setq powerline-default-separator 'arrow)
+  (spaceline-toggle-buffer-size)
+  (spaceline-compile)
+  )
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CUSTOM STUFF. DON'T TOUCH ;;;;;;;;;;;;;;;;;;;;
 (custom-set-variables
