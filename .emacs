@@ -1,10 +1,6 @@
                                         ; Allan Zhang's .emacs file
 
-;;; Code:
-
-                                        ; Initializing Packages
-(package-initialize)
-(setq package-enable-at-startup nil)
+                                        ;;;; Native emacs settings
 
                                         ;User Details
 (setq user-full-name "Allan Zhang")
@@ -17,11 +13,6 @@
 
                                         ; Allows me to see several lines below/above when scrolling
 (setq scroll-margin 5)
-                                        ; Line numbers
-(require 'linum-relative)
-
-(linum-relative-global-mode)
-(setq linum-relative-current-symbol "")
 
                                         ; Reduces size of kill ring to make it faster with helm
 (setq kill-ring-max 20)
@@ -29,12 +20,29 @@
                                         ; Disable scroll bars. UGLY!!!
 (scroll-bar-mode -1)
 
+                                        ; Makes it so the cursor is easier to see
 (blink-cursor-mode 0)
 
-(global-aggressive-indent-mode nil)
-(global-company-mode t)
+                                        ; I like replacing highlighted things tyvm
 (global-visual-line-mode t)
 (setq delete-by-moving-to-trash t)
+(setq sentence-end-double-space nil)
+(tab-always-indent t)
+(tool-bar-mode nil)
+
+                                        ; Initializing Package essentials
+                                        ; Getting additional package repos
+(load "package")
+(package-initialize)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+(setq package-enable-at-startup nil)
+
+;;;;;;;;; UI Settings
+                                        ; Line numbers
+(require 'linum-relative)
+
+(linum-relative-global-mode)
+(setq linum-relative-current-symbol "")
 
 					; Color theme
 (setq color-theme-is-cumulative t)
@@ -49,19 +57,9 @@
                                         ; Offset the number by two spaces to work around some weird fringe glitch. See: http://stackoverflow.com/questions/4920210/what-causes-this-graphical-error-in-emacs-with-linum-mode-on-os-x
 (setq linum-format "  %d ")
 
-                                        ; Package management
-; Getting additional package repos
-
- (load "package")
- (package-initialize)
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-
                                         ; Synchronizing and installing packages
                                         ; If package present, should have no effect
                                         ; Doesn't seem to work. Will keep here as reference http://emacs.stackexchange.com/questions/408/synchronize-packages-between-different-machines
-
-                                        ; Neotree
-(require 'neotree)
 
 					; Evil mode and various configurations for it
 (require 'evil)
@@ -147,9 +145,17 @@
     (define-key ido-completion-map (kbd "C-p") 'ido-prev-match))
 (add-hook 'ido-setup-hook 'ido-define-keys)
 
+                                        ; Projectile
+(projectile-global-mode)
+(setq projectile-completion-system 'helm)
+(setq projectile-indexing-method 'alien)
+
                                         ; Helm mode. Superceeds ido mode above?
 (require 'helm)
 (require 'helm-config)
+
+;; Helm projectile
+(helm-projectile-on)
 
 ;; Helm swoop. Replacing helm-occur.
 (require 'helm-swoop)
@@ -350,6 +356,7 @@
 ;; Adding ycmd completion to other modes
 (add-to-list 'ycmd-file-type-map '(ado-mode "generic"))
 
+(global-company-mode t)
 
 (require 'company-ycmd)
 (company-ycmd-setup)
@@ -571,8 +578,6 @@
  '(recentf-mode t)
  '(reftex-cite-punctuation (quote (", " " \\& " " et al.")))
  '(show-smartparens-global-mode t)
- '(tab-always-indent t)
- '(tool-bar-mode nil)
  '(weechat-color-list
    (unspecified "#272822" "#49483E" "#A20C41" "#F92672" "#67930F" "#A6E22E" "#968B26" "#E6DB74" "#21889B" "#66D9EF" "#A41F99" "#FD5FF0" "#349B8D" "#A1EFE4" "#F8F8F2" "#F8F8F0"))
  '(whitespace-action nil)
