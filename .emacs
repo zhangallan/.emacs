@@ -59,6 +59,7 @@
 ;;;;;;;;; UI Settings
                                         ; Line numbers
 (use-package linum-relative
+  :diminish linum-relative-mode
   :init
   (setq linum-relative-current-symbol "")
   )
@@ -136,6 +137,7 @@
   )
 
 (use-package evil-smartparens
+  :diminish evil-smartparens-mode
   :init
   (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
   )
@@ -152,6 +154,7 @@
   )
 
 (use-package evil-snipe
+  :diminish evil-snipe-mode
   :init
   (add-hook 'magit-mode-hook 'turn-off-evil-snipe-override-mode)
   (setq evil-snipe-scope 'line
@@ -165,7 +168,8 @@
   )
 
 (use-package vimish-fold)
-(use-package evil-vimish-fold)
+(use-package evil-vimish-fold
+  :diminish evil-vimish-fold-mode)
 (evil-vimish-fold-mode 1)
 
                                         ; Rainbow Delimiters
