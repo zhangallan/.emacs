@@ -94,18 +94,19 @@
   (setq evil-insert-state-cursor '("red" bar))
   (setq evil-replace-state-cursor '("red" bar))
   (setq evil-operator-state-cursor '("red" hollow))
+
+  :config
+  (evil-mode 1)
+
+  ;; Changing default modes for some major modes
+  (cl-loop for (mode . state) in '((shell-mode . insert)
+                                   (help-mode . emacs)
+                                   (dired-mode . emacs)
+                                   (wdired-mode . normal)
+                                   (text-mode . insert)
+                                   (org-mode . normal))
+           do (evil-set-initial-state mode state))
   )
-
-(evil-mode 1)
-
-;; Changing default modes for some major modes
-(cl-loop for (mode . state) in '((shell-mode . insert)
-				 (help-mode . emacs)
-				 (dired-mode . emacs)
-				 (wdired-mode . normal)
-				 (text-mode . insert)
-				 (org-mode . normal))
-	 do (evil-set-initial-state mode state))
 
 ;; Changing some key bindings in insert mode for convenience
 ;; I think this is obsoleted by evil-disable-insert-state-bindings?
@@ -125,7 +126,9 @@
 (use-package evil-commentary)
 (evil-commentary-mode)
 
-(use-package evil-anzu)
+(use-package evil-anzu
+  :defer t 
+  )
 
 (use-package evil-easymotion
   :init
@@ -137,8 +140,10 @@
   (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode)
   )
 
-(use-package evil-surround)
-(global-evil-surround-mode 1)
+(use-package evil-surround
+  :config
+  (global-evil-surround-mode 1)
+  )
 
 (use-package evil-quickscope
   :init
@@ -149,11 +154,15 @@
 (use-package evil-snipe
   :init
   (add-hook 'magit-mode-hook 'turn-off-evil-snipe-override-mode)
-  (setq evil-snipe-scope 'line)
-  (setq evil-spillover-scope 'visible)
+  (setq evil-snipe-scope 'line
+        evil-spillover-scope 'visible
+        evil-snipe-repeat-scope 'visible
+        evil-snipe-smart-case t)
+
+  :config
+  (evil-snipe-mode 1)
+  (evil-snipe-override-mode 1)
   )
-(evil-snipe-mode 1)
-(evil-snipe-override-mode 1)
 
 (use-package vimish-fold)
 (use-package evil-vimish-fold)
@@ -189,10 +198,10 @@
 
                                         ; Helm mode. Superceeds ido mode above?
 (use-package helm
+  :diminish helm-mode
+
   :init
   (require 'helm-config)
-  ;; Helm projectile
-  (helm-projectile-on)
 
   ;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
   ;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
@@ -223,6 +232,18 @@
   (global-set-key (kbd "C-x C-f") 'helm-find-files)
 
   (setq helm-buffer-max-length 60)
+
+  (require 'helm-mode)
+  (helm-mode 1)
+  )
+
+(use-package helm-projectile
+  :init
+  ;; Helm projectile
+  (helm-projectile-on)
+
+  :config
+  (setq projectile-completion-system 'helm)
   )
 
 ;; Helm swoop. Replacing helm-occur.
@@ -232,8 +253,6 @@
   (setq helm-swoop-use-fuzzy-match t)
   (define-key evil-motion-state-map (kbd "C-s") 'helm-swoop-from-evil-search)
   )
-
-(helm-mode 1)
 
 ;; Changing helm buffer candidate size
 ;; I think this isn't useful?
@@ -362,6 +381,7 @@
   )
 (recentf-mode t) ;; enable recent files mode.
 
+'(recentf-auto-cleanup (quote mode))
 					; Python
 (setq python-check-command "flake8")
 (setq python-indent-guess-indent-offset nil)
@@ -607,9 +627,6 @@
    (quote
     ("-q" "-dNOPAUSE" "-DNOPLATFONTS" "-dPrinted" "-dTextAlphaBits=4" "-dGraphicsAlphaBits=4")))
  '(preview-scale-function 1.5)
- '(recentf-auto-cleanup (quote mode))
- '(recentf-max-saved-items 400)
- '(recentf-mode t)
  '(reftex-cite-punctuation (quote (", " " \\& " " et al.")))
  '(show-smartparens-global-mode t)
  '(weechat-color-list
