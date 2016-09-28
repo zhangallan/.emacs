@@ -29,7 +29,7 @@
 (global-visual-line-mode t)
 (setq delete-by-moving-to-trash t)
 (setq sentence-end-double-space nil)
-(tab-always-indent t)
+(setq tab-always-indent t)
 (tool-bar-mode nil)
 
                                         ; Comint stuff for good interpreter settings
@@ -213,10 +213,6 @@
   (global-set-key (kbd "C-c h") 'helm-command-prefix)
   (global-unset-key (kbd "C-x c"))
 
-  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
-  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
-  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
-
   (setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
         helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
         helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
@@ -236,6 +232,11 @@
   (global-set-key (kbd "C-x C-f") 'helm-find-files)
 
   (setq helm-buffer-max-length 60)
+
+  :config
+  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
 
   (require 'helm-mode)
   (helm-mode 1)
@@ -304,6 +305,7 @@
   :init
   ;; Only enable yas snippet in certain modes
   (add-hook 'prog-mode-hook #'yas-minor-mode)
+  (add-hook 'ado-mode-hook #'yas-minor-mode)
 
   (setq yas-wrap-around-region t)
 
@@ -325,10 +327,12 @@
   (setq ess-swv-pdflatex-commands (quote ("pdflatex")))
   (setq ess-swv-processor (quote knitr))
   )
+(require 'ess)
 
                                         ; ado mode for Stata
 (add-to-list 'load-path "~/.emacs.d/ado-mode-1.14.1.0/lisp")
-(use-package ado-mode)
+(use-package ado-mode
+  :ensure nil)
 
 					; Org-Mode and RefTex set up
 (use-package org
@@ -367,7 +371,7 @@
 
 					; Recentf - For easily getting recent files
 (use-package recentf
-  :init
+  :config
   (global-set-key (kbd "C-x C-r") 'ido-recentf-open) ;; get rid of `find-file-read-only' and replace it with something more useful.
   (setq recentf-max-saved-items 50) ; 50 files ought to be enough.
   ;; Regex to ignore some files
@@ -398,7 +402,7 @@
 
 					; Elpy for Python
 (use-package elpy
-  :init
+  :config
   (setq elpy-modules
         (quote
          (elpy-module-eldoc elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-sane-defaults)))
@@ -411,7 +415,7 @@
 
                                         ; ycmd Config for use with company mode
 (use-package ycmd
-  :init
+  :config
   (set-variable 'ycmd-server-command '("python" "-u" "C:\\HOME\\ycmd-master\\ycmd\\ycmd"))
 
   ;; Adding ycmd completion to other modes
@@ -419,7 +423,7 @@
   )
 
 (use-package company
-  :init
+  :config
   (global-set-key (kbd "<C-tab>") 'company-complete)
 
   ;; Setting hooks for company mode
@@ -455,9 +459,6 @@
 (add-hook 'after-init-hook #'global-ycmd-mode)
 
 					; Company Mode Configs
-(use-package company-auctex)
-(company-auctex-init)
-
 ;; Fixes conflicts with tab usage between company and yasnippets
 ;; From: http://emacs.stackexchange.com/questions/7908/how-to-make-yasnippet-and-company-work-nicer
 (defun check-expansion ()
@@ -531,11 +532,14 @@
 (define-key yas-keymap (kbd "C-g") 'abort-company-or-yas)
 
                                         ; AUCTeX Config
-(use-package auctex
-  :init
-  (setq TeX-auto-save t) ; Enable parse on save
-  (setq TeX-parse-self t) ; Enable parse on load
-  )
+;; (use-package auctex
+;;   :init
+;;   (setq TeX-auto-save t) ; Enable parse on save
+;;   (setq TeX-parse-self t) ; Enable parse on load
+;;   )
+
+;; (use-package company-auctex)
+;; (company-auctex-init)
 
                                         ; Powerline stuff
 (use-package spaceline
