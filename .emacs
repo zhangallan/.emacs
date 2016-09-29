@@ -30,7 +30,7 @@
 (setq delete-by-moving-to-trash t)
 (setq sentence-end-double-space nil)
 (setq tab-always-indent t)
-(tool-bar-mode nil)
+(tool-bar-mode -1)
 
                                         ; Comint stuff for good interpreter settings
 (setq comint-scroll-to-bottom-on-input t)
@@ -124,8 +124,11 @@
 (key-chord-define evil-replace-state-map "jk" 'evil-normal-state)
 
 ;; Additional packages
-(use-package evil-commentary)
-(evil-commentary-mode)
+(use-package evil-commentary
+  :diminish evil-commentary-mode
+  :config
+  (evil-commentary-mode)
+  )
 
 (use-package evil-anzu
   :defer t 
@@ -155,6 +158,8 @@
 
 (use-package evil-snipe
   :diminish evil-snipe-mode
+  :diminish evil-snipe-override-mode
+  :diminish evil-snipe-local-mode
   :init
   (add-hook 'magit-mode-hook 'turn-off-evil-snipe-override-mode)
   (setq evil-snipe-scope 'line
@@ -287,6 +292,7 @@
 
 					; Smartparens
 (use-package smartparens
+  :diminish smartparens-mode
   :init
   (smartparens-global-mode t)
   (require 'smartparens-config)
@@ -415,6 +421,7 @@
 
                                         ; ycmd Config for use with company mode
 (use-package ycmd
+  :diminish ycmd-mode
   :config
   (set-variable 'ycmd-server-command '("python" "-u" "C:\\HOME\\ycmd-master\\ycmd\\ycmd"))
 
@@ -423,7 +430,11 @@
   )
 
 (use-package company
+  :diminish company-mode 
   :config
+  (add-hook 'prog-mode-hook 'company-mode)
+  (add-hook 'ado-mode-hook 'company-mode)
+
   (global-set-key (kbd "<C-tab>") 'company-complete)
 
   ;; Setting hooks for company mode
@@ -448,7 +459,6 @@
 
   (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
   )
-(add-hook 'after-init-hook 'global-company-mode)
 
 (use-package company-ycmd
   :init
