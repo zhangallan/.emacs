@@ -199,8 +199,8 @@
 (setq ido-everywhere t)
 
 (defun ido-define-keys () ;; C-n/p is more intuitive in vertical layout
-    (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
-    (define-key ido-completion-map (kbd "C-p") 'ido-prev-match))
+  (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
+  (define-key ido-completion-map (kbd "C-p") 'ido-prev-match))
 (add-hook 'ido-setup-hook 'ido-define-keys)
 
                                         ; Projectile
@@ -231,16 +231,10 @@
         helm-ff-file-name-history-use-recentf t)
 
   ;; Configuring helm to replace my life
-  (global-set-key (kbd "C-x b") 'helm-mini)
   (setq helm-buffers-fuzzy-matching t
         helm-recentf-fuzzy-match    t)
 
-  (global-set-key (kbd "M-x") 'helm-M-x)
   (setq helm-M-x-fuzzy-match t) ;; optional fuzzy matching for helm-M-x
-
-  (global-set-key (kbd "M-y") 'helm-show-kill-ring)
-
-  (global-set-key (kbd "C-x C-f") 'helm-find-files)
 
   (setq helm-buffer-max-length 60)
 
@@ -251,6 +245,12 @@
 
   (require 'helm-mode)
   (helm-mode 1)
+
+  :bind (("M-x" . helm-M-x)
+         ("M-y" . helm-show-kill-ring)
+         ("C-x C-f" . helm-find-files)
+         ("C-x b" . helm-mini)
+         )
   )
 
 (use-package helm-projectile
@@ -497,19 +497,19 @@
    (t
     (indent-for-tab-command)
     (if (or (not yas/minor-mode)
-        (null (do-yas-expand)))
-    (if (check-expansion)
-        (progn
-          (company-manual-begin)
-          (if (null company-candidates)
-          (progn
-            (company-abort)
-            (indent-for-tab-command)))))))))
+            (null (do-yas-expand)))
+        (if (check-expansion)
+            (progn
+              (company-manual-begin)
+              (if (null company-candidates)
+                  (progn
+                    (company-abort)
+                    (indent-for-tab-command)))))))))
 
 (defun tab-complete-or-next-field ()
   (interactive)
   (if (or (not yas/minor-mode)
-      (null (do-yas-expand)))
+          (null (do-yas-expand)))
       (if (check-expansion)
           (progn
             (company-manual-begin)
@@ -522,8 +522,8 @@
 (defun expand-snippet-or-complete-selection ()
   (interactive)
   (if (or (not yas/minor-mode)
-      (null (do-yas-expand))
-      (company-abort))
+          (null (do-yas-expand))
+          (company-abort))
       (company-complete-selection)))
 
 (defun abort-company-or-yas ()
@@ -559,7 +559,7 @@
 
                                         ; Powerline stuff
 (use-package spaceline
-  :init
+  :config
   (require 'spaceline-config)
   (spaceline-spacemacs-theme)
   (spaceline-helm-mode)
