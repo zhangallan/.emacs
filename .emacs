@@ -184,6 +184,12 @@
   )
 (rainbow-delimiters-mode 1)
 
+                                        ; ranger mode for better directory stuff
+(use-package ranger
+  :config
+  (ranger-override-dired-mode t)
+  (setq ranger-dont-show-binary t)
+  )
 					; IDO mode for better filename completion
                                         ; Possibly succeeded by helm, but whatever
 
@@ -308,10 +314,10 @@
 
 					; Yas (Snippet and template support)
 (use-package yasnippet
-  :init
+  :config
   ;; Only enable yas snippet in certain modes
-  (add-hook 'prog-mode-hook #'yas-minor-mode)
-  (add-hook 'ado-mode-hook #'yas-minor-mode)
+  (add-hook 'prog-mode-hook 'yas-minor-mode)
+  (add-hook 'ado-mode-hook 'yas-minor-mode)
 
   (setq yas-wrap-around-region t)
 
