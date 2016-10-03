@@ -107,6 +107,9 @@
                                    (text-mode . insert)
                                    (org-mode . normal))
            do (evil-set-initial-state mode state))
+
+  (define-key evil-normal-state-map "0" 'evil-first-non-blank)
+  (define-key evil-normal-state-map "^" 'evil-digit-argument-or-evil-beginning-of-line)
   )
 
 ;; Changing some key bindings in insert mode for convenience
