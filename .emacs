@@ -39,8 +39,15 @@
 (setq comint-scroll-to-bottom-on-output t)
 (setq comint-move-point-for-output t)
 
+					; Backup settings
 					; Changing backup directory to avoid clutter
-(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+(setq delete-old-versions t
+      kept-new-versions 6
+      kept-old-versions 2
+      version-control t
+      backup-directory-alist '(("." . "~/.emacs.d/backups"))
+      )
+
 
                                         ; Initializing Package essentials
                                         ; Getting additional package repos
@@ -69,7 +76,10 @@
   :diminish nlinum-relative-mode
   :config
   (nlinum-relative-setup-evil)
-  (setq global-nlinum-relative-mode t)
+  (setq global-nlinum-relative-mode t
+	nlinum-relative-current-symbol ""
+	nlinum-relative-offset 0
+	nlinum-relative-redisplay-delay 0)
   )
 
 					; Color theme
