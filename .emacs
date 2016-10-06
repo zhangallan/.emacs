@@ -60,12 +60,17 @@
 
 ;;;;;;;;; UI Settings
                                         ; Line numbers
-(use-package linum-relative
-  :diminish linum-relative-mode
-  :init
-  (setq linum-relative-current-symbol "")
+(use-package nlinum
+  :config
+  (setq global-nlinum-mode)
   )
-(linum-relative-global-mode)
+
+(use-package nlinum-relative
+  :diminish nlinum-relative-mode
+  :config
+  (nlinum-relative-setup-evil)
+  (setq global-nlinum-relative-mode t)
+  )
 
 					; Color theme
 (setq color-theme-is-cumulative t)
@@ -194,6 +199,8 @@
   :config
   (ranger-override-dired-mode t)
   (setq ranger-dont-show-binary t)
+  (setq ranger-hide-cursor nil)
+  (setq ranger-cleanup-on-disable nil)
   )
 					; IDO mode for better filename completion
                                         ; Possibly succeeded by helm, but whatever
@@ -295,11 +302,11 @@
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
   )
 
-					; Aggressive Indent Mode
-(use-package aggressive-indent
-  :init
-  (global-aggressive-indent-mode 1)
-  )
+					; Aggressive Indent Mode. Disabled because it's slow
+;; (use-package aggressive-indent
+;;   :init
+;;   (global-aggressive-indent-mode 1)
+;;   )
 
 					; Smartparens
 (use-package smartparens
@@ -349,7 +356,10 @@
                                         ; ado mode for Stata
 (add-to-list 'load-path "~/.emacs.d/ado-mode-1.14.1.0/lisp")
 (use-package ado-mode
-  :ensure nil)
+  :ensure nil
+
+  :config
+  (run-hooks 'ado-mode-hook))
 
 					; Org-Mode and RefTex set up
 (use-package org
@@ -449,8 +459,6 @@
   (global-set-key (kbd "<C-tab>") 'company-complete)
 
   ;; Setting hooks for company mode
-  (add-hook 'ado-mode-hook (lambda () set (make-local-variable 'company-backends) '(company-dabbrev)))
-
   (setq company-auto-complete nil)
   (setq company-dabbrev-downcase nil)
   (setq company-dabbrev-ignore-case nil)
