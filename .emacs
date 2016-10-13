@@ -1,6 +1,9 @@
                                         ; Allan Zhang's .emacs file
 
                                         ;;;; Native emacs settings
+ 
+					; increase gc-cons-threshold during init
+(setq gc-cons-threshold 100000000)
 
                                         ;User Details
 (setq user-full-name "Allan Zhang")
@@ -48,7 +51,6 @@
       backup-directory-alist '(("." . "~/.emacs.d/backups"))
       )
 
-
                                         ; Initializing Package essentials
                                         ; Getting additional package repos
 (load "package")
@@ -67,11 +69,6 @@
 
 ;;;;;;;;; UI Settings
                                         ; Line numbers
-(use-package nlinum
-  :config
-  (setq global-nlinum-mode)
-  )
-
 (use-package nlinum-relative
   :diminish nlinum-relative-mode
   :config
@@ -103,7 +100,9 @@
 					; Evil mode and various configurations for it
 (use-package evil
   :init
-  (setq evil-disable-insert-state-bindings t)
+  (setq evil-disable-insert-state-bindings t
+	evil-ex-search-vim-style-regexp t
+	evil-search-module 'evil-search)
 
   ;; Changing color of cursor states so I know what mode I'm in
   (setq evil-emacs-state-cursor '("red" box))
