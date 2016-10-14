@@ -158,7 +158,6 @@
   )
 
 (use-package evil-anzu
-  :defer t 
   )
 
 (use-package evil-easymotion
@@ -445,6 +444,25 @@
 (setq python-shell-interpreter-args
       "-i C:\\Users\\azhang1\\AppData\\Local\\Programs\\Python\\Python35\\Scripts\\ipython.exe")
 
+;; (setq str "master_df.query(Date == 'Jun. 2010')")
+;; (split-string str "(")
+;; (length (split-string str "("))
+
+;; Custom function to get help for python function
+;; TODO: This shit is too complicated...
+(defun get-help-in-python-shell ()
+  (interactive)
+  (let ((str (buffer-substring (python-nav-beginning-of-statement) (python-nav-end-of-statement))))
+    (elpy-shell-get-or-create-process)
+    (setq str (replace-regexp-in-string "^.*?=\{1\}\s*" "" str))
+    (if (> (length (split-string str "(")) 2)
+        (setq str (mapconcat 'identity (-drop-last 1 (split-string str "(")) "("))
+      (setq str (car (split-string str "("))))
+    (setq str (concat "help(" str))
+    (setq str (concat str ")"))
+    (python-shell-send-string str)
+    (elpy-shell-display-buffer)
+    ))
 					; Elpy for Python
 (use-package elpy
   :config
@@ -455,6 +473,8 @@
   (setq elpy-rpc-python-command "pythonw")
 
   (define-key elpy-mode-map (kbd "C-c C-c") 'elpy-shell-send-region-or-buffer)
+
+  (define-key elpy-mode-map (kbd "C-M-h") 'get-help-in-python-shell)
   (elpy-enable)
   )
 
