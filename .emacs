@@ -37,6 +37,7 @@
 
 (auto-image-file-mode t)
 
+(setq-default indent-tabs-mode nil)
                                         ; Comint stuff for good interpreter settings
 (setq comint-scroll-to-bottom-on-input t)
 (setq comint-scroll-to-bottom-on-output t)
@@ -69,12 +70,19 @@
 
 ;;;;;;;;; UI Settings
                                         ; Line numbers
+(use-package nlinum
+  :diminish nlinum-mode
+  :config
+  (add-hook 'prog-mode-hook 'nlinum-mode)
+  (add-hook 'ado-mode-hook 'nlinum-mode))
+
 (use-package nlinum-relative
   :diminish nlinum-relative-mode
   :config
   (nlinum-relative-setup-evil)
-  (setq global-nlinum-relative-mode t
-	nlinum-relative-current-symbol ""
+  (add-hook 'prog-mode-hook 'nlinum-relative-mode)
+  (add-hook 'ado-mode-hook 'nlinum-relative-mode)
+  (setq nlinum-relative-current-symbol ""
 	nlinum-relative-offset 0
 	nlinum-relative-redisplay-delay 0)
   )
@@ -427,6 +435,7 @@
 
 '(recentf-auto-cleanup (quote mode))
 					; Python
+;; TODO: These file paths should probably go into a computer-specific file
 (setq python-check-command "flake8")
 (setq python-indent-guess-indent-offset nil)
 (setq python-shell-exec-path (quote ("C:\\Python27\\ArcGIS10.1")))
@@ -442,12 +451,12 @@
   (setq elpy-modules
         (quote
          (elpy-module-eldoc elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-sane-defaults)))
-  (setq elpy-rpc-backend nil)
+  (setq elpy-rpc-backend "jedi")
   (setq elpy-rpc-python-command "pythonw")
 
   (define-key elpy-mode-map (kbd "C-c C-c") 'elpy-shell-send-region-or-buffer)
+  (elpy-enable)
   )
-(elpy-enable)
 
                                         ; ycmd Config for use with company mode
 (use-package ycmd
@@ -491,8 +500,11 @@
 (use-package company-ycmd
   :init
   (add-to-list 'company-backends 'company-ycmd)
+
+  :config
+  (setq company-ycmd-request-sync-timeout 0)
+  (company-ycmd-setup)
   )
-(company-ycmd-setup)
 
 (add-hook 'after-init-hook #'global-ycmd-mode)
 
