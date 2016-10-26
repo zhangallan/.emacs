@@ -95,8 +95,9 @@
 (set-face-attribute 'default nil :font "Source Code Pro Light 8")
 
                                         ; Theme
-(use-package material-theme)
-(load-theme 'material t)
+(use-package material-theme
+  :config
+  (load-theme 'material t))
 
                                         ; Offset the number by two spaces to work around some weird fringe glitch. See: http://stackoverflow.com/questions/4920210/what-causes-this-graphical-error-in-emacs-with-linum-mode-on-os-x
 (setq linum-format "  %d ")
@@ -118,7 +119,7 @@
   (setq evil-visual-state-cursor '("orange" box))
   (setq evil-insert-state-cursor '("red" bar))
   (setq evil-replace-state-cursor '("red" bar))
-  (setq evil-operator-state-cursor '("red" hollow))
+  (setq evil-operator-state-cursor '("green" hollow))
 
   :config
   (evil-mode 1)
@@ -143,12 +144,14 @@
 ;; (define-key evil-insert-state-map "\C-a" 'beginning-of-line)
 
 ;; Adding key chord so I don't have to hit escape
-(use-package key-chord)
-(key-chord-mode 1)
-(key-chord-define evil-normal-state-map "jk" 'evil-force-normal-state)
-(key-chord-define evil-visual-state-map "jk" 'evil-change-to-previous-state)
-(key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
-(key-chord-define evil-replace-state-map "jk" 'evil-normal-state)
+(use-package key-chord
+  :config
+  (key-chord-mode 1)
+  (key-chord-define evil-normal-state-map "jk" 'evil-force-normal-state)
+  (key-chord-define evil-visual-state-map "jk" 'evil-change-to-previous-state)
+  (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
+  (key-chord-define evil-replace-state-map "jk" 'evil-normal-state)
+  )
 
 ;; Additional packages
 (use-package evil-commentary
@@ -207,8 +210,10 @@
 (use-package rainbow-delimiters
   :init
   (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+  (add-hook 'ado-mode-hook #'rainbow-delimiters-mode)
+  :config
+  (rainbow-delimiters-mode 1)
   )
-(rainbow-delimiters-mode 1)
 
                                         ; ranger mode for better directory stuff
 (use-package ranger
@@ -404,6 +409,8 @@
   (global-set-key "\C-cc" 'org-capture)
   (global-set-key "\C-ca" 'org-agenda)
   (global-set-key "\C-cb" 'org-iswitchb)
+
+  (setq org-list-allow-alphabetical t)
   )
 
                                         ; Magit
