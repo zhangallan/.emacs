@@ -14,8 +14,12 @@
                                         ; Makes all yes or no prompts to y or n
 (defalias 'yes-or-no-p 'y-or-n-p)
 
-                                        ; Allows me to see several lines below/above when scrolling
-(setq scroll-margin 5)
+                                        ; Scroll settings
+(setq scroll-margin 0
+      mouse-wheel-scroll-amount '(1 ((shift) . 1))
+      mouse-wheel-progressive-speed nil
+      mouse-wheel-follow-mouse 't
+      scroll-step 1)
 
                                         ; Reduces size of kill ring to make it faster with helm
 (setq kill-ring-max 20)
@@ -29,6 +33,7 @@
                                         ; I like replacing highlighted things tyvm
 (delete-selection-mode 1)
 
+(global-hl-line-mode t)
 (global-visual-line-mode t)
 (setq delete-by-moving-to-trash t)
 (setq sentence-end-double-space nil)
@@ -62,29 +67,37 @@
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 (setq use-package-verbose t)
-(require 'use-package)
+(eval-when-compile (require 'use-package))
 (require 'diminish)
 
 ;; Automatic downloading and installing of packages in this file loaded with use-package
 (setq use-package-always-ensure t)
 
+                                        ; which-key
+(use-package which-key
+  :config
+  (which-key-mode)
+  (setq which-key-sort-order 'which-key-local-then-key-order
+        which-key-idle-delay .5
+        which-key-max-description-length 40))
 ;;;;;;;;; UI Settings
                                         ; Line numbers
 (use-package nlinum
   :diminish nlinum-mode
   :config
   (add-hook 'prog-mode-hook 'nlinum-mode)
-  (add-hook 'ado-mode-hook 'nlinum-mode))
+  (add-hook 'ado-mode-hook 'nlinum-mode)
+  (setq nlinum-format "%4d"))
 
 (use-package nlinum-relative
   :diminish nlinum-relative-mode
   :config
-  (nlinum-relative-setup-evil)
   (add-hook 'prog-mode-hook 'nlinum-relative-mode)
   (add-hook 'ado-mode-hook 'nlinum-relative-mode)
   (setq nlinum-relative-current-symbol ""
 	nlinum-relative-offset 0
 	nlinum-relative-redisplay-delay 0)
+  (nlinum-relative-setup-evil)
   )
 
 					; Color theme
@@ -129,7 +142,7 @@
                                    (help-mode . emacs)
                                    (dired-mode . emacs)
                                    (wdired-mode . normal)
-                                   (text-mode . insert)
+                                   (text-mode . normal)
                                    (org-mode . normal))
            do (evil-set-initial-state mode state))
 
@@ -160,7 +173,13 @@
   (evil-commentary-mode)
   )
 
+(use-package evil-matchit
+  :config
+  (global-evil-matchit-mode 1))
+
 (use-package evil-anzu
+  :config
+  (setq anzu-cons-mode-line-p nil)
   )
 
 (use-package evil-easymotion
@@ -178,6 +197,12 @@
   :config
   (global-evil-surround-mode 1)
   )
+
+(use-package evil-embrace
+  :config
+  (evil-embrace-enable-evil-surround-integration)
+  (add-hook 'ado-mode-hook (lambda ()
+                             (embrace-add-pair ?` "`" "'"))))
 
 (use-package evil-quickscope
   :init
@@ -297,9 +322,14 @@
 
 ;; Helm swoop. Replacing helm-occur.
 (use-package helm-swoop
-  :init
+  :defer t
+  :config
   (global-set-key (kbd "C-c o") 'helm-swoop)
-  (setq helm-swoop-use-fuzzy-match t)
+  (setq helm-swoop-use-fuzzy-match t
+        ;; Disable pre-input
+        helm-swoop-pre-input-function (lambda () "")
+        helm-swoop-spped-or-color nil
+        )
   (define-key evil-motion-state-map (kbd "C-s") 'helm-swoop-from-evil-search)
   )
 
@@ -483,6 +513,7 @@
 
   (define-key elpy-mode-map (kbd "C-M-h") 'get-help-in-python-shell)
   (elpy-enable)
+  :bind (("C-c C-c" . 'elpy-shell-send-region-or-buffer))
   )
 
                                         ; ycmd Config for use with company mode
@@ -580,12 +611,12 @@
                   (yas-next-field))))
         (yas-next-field))))
 
-(defun expand-snippet-or-complete-selection ()
+(defun expand-snippet-or-cycle ()
   (interactive)
   (if (or (not yas/minor-mode)
           (null (do-yas-expand))
           (company-abort))
-      (company-complete-selection)))
+      (company-complete-common-or-cycle)))
 
 (defun abort-company-or-yas ()
   (interactive)
@@ -593,12 +624,10 @@
       (yas-abort-snippet)
     (company-abort)))
 
-;; (global-set-key [tab] 'tab-indent-or-complete)
-;; (global-set-key (kbd "TAB") 'tab-indent-or-complete)
 (global-set-key [(control return)] 'company-complete-common)
 
-(define-key company-active-map [tab] 'expand-snippet-or-complete-selection)
-(define-key company-active-map (kbd "TAB") 'expand-snippet-or-complete-selection)
+(define-key company-active-map [tab] 'expand-snippet-or-cycle)
+(define-key company-active-map (kbd "TAB") 'expand-snippet-or-cycle)
 
 (define-key yas-minor-mode-map [tab] 'tab-indent-or-complete)
 (define-key yas-minor-mode-map (kbd "TAB") 'tab-indent-or-complete)
