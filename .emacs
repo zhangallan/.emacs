@@ -16,10 +16,9 @@
 
                                         ; Scroll settings
 (setq scroll-margin 0
-      mouse-wheel-scroll-amount '(1 ((shift) . 1))
+      mouse-wheel-scroll-amount '(2 ((shift) . 1))
       mouse-wheel-progressive-speed nil
-      mouse-wheel-follow-mouse 't
-      scroll-step 1)
+      mouse-wheel-follow-mouse 't)
 
                                         ; Reduces size of kill ring to make it faster with helm
 (setq kill-ring-max 20)
@@ -208,6 +207,12 @@
   :init
   (add-hook 'prog-mode-hook 'turn-on-evil-quickscope-always-mode)
   (add-hook 'ado-mode-hook 'turn-on-evil-quickscope-always-mode)
+  )
+
+(use-package evil-numbers
+  :config
+  (define-key evil-normal-state-map (kbd "C-c +") 'evil-numbers/inc-at-pt)
+  (define-key evil-normal-state-map (kbd "C-c -") 'evil-numbers/dec-at-pt)
   )
 
 (use-package evil-snipe
