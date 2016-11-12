@@ -251,7 +251,7 @@
   (ranger-override-dired-mode t)
   (setq ranger-dont-show-binary t)
   (setq ranger-hide-cursor nil)
-  (setq ranger-cleanup-on-disable nil)
+  (setq ranger-cleanup-on-disable t)
   )
 					; IDO mode for better filename completion
                                         ; Possibly succeeded by helm, but whatever
@@ -454,6 +454,9 @@
   (global-set-key (kbd "C-x g") 'magit-status)
   )
 
+                                        ; aHg
+(use-package ahg)
+
 					; Recentf - For easily getting recent files
 (use-package recentf
   :config
@@ -518,7 +521,6 @@
 
   (define-key elpy-mode-map (kbd "C-M-h") 'get-help-in-python-shell)
   (elpy-enable)
-  :bind (("C-c C-c" . 'elpy-shell-send-region-or-buffer))
   )
 
                                         ; ycmd Config for use with company mode
@@ -529,6 +531,8 @@
 
   ;; Adding ycmd completion to other modes
   (add-to-list 'ycmd-file-type-map '(ado-mode "generic"))
+  (add-hook 'prog-mode-hook 'ycmd-mode)
+  (add-hook 'ado-mode-hook 'ycmd-mode)
   )
 
 (use-package company
@@ -547,7 +551,12 @@
   (setq company-idle-delay 0.2)
   (setq company-minimum-prefix-length 2)
   (setq company-show-numbers t)
+
+  ;; Remove company-capf from backends
+  (setq company-backends (delete 'company-capf company-backends))
+
   ;; Add yasnippet support for all company backends
+
   ;; https://github.com/syl20bnr/spacemacs/pull/179
   (defvar company-mode/enable-yas t
     "Enable yasnippet for all backends.")
@@ -568,8 +577,6 @@
   (setq company-ycmd-request-sync-timeout 0)
   (company-ycmd-setup)
   )
-
-(add-hook 'after-init-hook #'global-ycmd-mode)
 
 					; Company Mode Configs
 ;; Fixes conflicts with tab usage between company and yasnippets
