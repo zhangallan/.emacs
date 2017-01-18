@@ -33,7 +33,11 @@
 (delete-selection-mode 1)
 
 (global-hl-line-mode t)
-(global-visual-line-mode t)
+;; Not sure I want this on everywhere
+;; (global-visual-line-mode t)
+                                        ; Visual line mode hooks
+(add-hook 'org-mode-hook 'visual-line-mode)
+
 (setq delete-by-moving-to-trash t)
 (setq sentence-end-double-space nil)
 (setq tab-always-indent t)
@@ -53,8 +57,10 @@
       kept-new-versions 6
       kept-old-versions 2
       version-control t
-      backup-directory-alist '(("." . "~/.emacs.d/backups"))
+      backup-directory-alist `((".*" . ,temporary-file-directory))
       )
+;; (setq auto-save-file-name-transforms
+;;       `((".*" ,temporary-file-directory t)))
 
                                         ; Initializing Package essentials
                                         ; Getting additional package repos
@@ -88,31 +94,45 @@
   (add-hook 'ado-mode-hook 'nlinum-mode)
   (setq nlinum-format "%4d"))
 
-(use-package nlinum-relative
-  :diminish nlinum-relative-mode
-  :config
-  (add-hook 'prog-mode-hook 'nlinum-relative-mode)
-  (add-hook 'ado-mode-hook 'nlinum-relative-mode)
-  (setq nlinum-relative-current-symbol ""
-	nlinum-relative-offset 0
-	nlinum-relative-redisplay-delay 0)
-  (nlinum-relative-setup-evil)
-  )
+;; nlinum relative makes things slow and flickery
+;; (use-package nlinum-relative
+;;   :diminish nlinum-relative-mode
+;;   :config
+;;   (add-hook 'prog-mode-hook 'nlinum-relative-mode)
+;;   (add-hook 'ado-mode-hook 'nlinum-relative-mode)
+;;   (setq nlinum-relative-current-symbol ""
+;; 	nlinum-relative-offset 0
+;; 	nlinum-relative-redisplay-delay 0)
+;;   (nlinum-relative-setup-evil)
+;;   )
 
 					; Color theme
 (setq color-theme-is-cumulative t)
 (setq color-theme-is-global t)
 
+                                        ; Font lock
+;; Hopefully this helps with the slowdown
+(setq font-lock-maximum-decoration 2)
+
                                         ; font
 (set-face-attribute 'default nil :font "Source Code Pro Light 8")
 
                                         ; Theme
+;; (use-package spacemacs-theme
+;;   :config
+;;   (load-theme 'spacemacs-dark t))
+
 (use-package material-theme
   :config
   (load-theme 'material t))
 
-                                        ; Offset the number by two spaces to work around some weird fringe glitch. See: http://stackoverflow.com/questions/4920210/what-causes-this-graphical-error-in-emacs-with-linum-mode-on-os-x
-(setq linum-format "  %d ")
+                                        ; Auto Dim Other Buffers - Temp removed because it seems to slow things down?
+;; (use-package auto-dim-other-buffers
+;;   :config
+;;   (add-hook 'after-init-hook (lambda ()
+;;                                (when (fboundp 'auto-dim-other-buffers-mode)
+;;                                  (auto-dim-other-buffers-mode t))))
+;;   )
 
                                         ; Synchronizing and installing packages
                                         ; If package present, should have no effect
@@ -252,6 +272,7 @@
   (setq ranger-dont-show-binary t)
   (setq ranger-hide-cursor nil)
   (setq ranger-cleanup-on-disable t)
+  (define-key ranger-mode-map (kbd "+") 'dired-create-directory)
   )
 					; IDO mode for better filename completion
                                         ; Possibly succeeded by helm, but whatever
@@ -267,12 +288,13 @@
 (add-hook 'ido-setup-hook 'ido-define-keys)
 
                                         ; Projectile
-(use-package projectile
-  :init
-  (setq projectile-completion-system 'helm)
-  (setq projectile-indexing-method 'alien)
-  )
-(projectile-global-mode)
+;; Disabled because of performance issues with spaceline. And I don't really use it.
+;; (use-package projectile
+;;   :init
+;;   (setq projectile-completion-system 'helm)
+;;   (setq projectile-indexing-method 'alien)
+;;   )
+;; (projectile-global-mode)
 
                                         ; Helm mode. Superceeds ido mode above?
 (use-package helm
@@ -286,6 +308,9 @@
   ;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
   (global-set-key (kbd "C-c h") 'helm-command-prefix)
   (global-unset-key (kbd "C-x c"))
+
+  ;; Setting imenu
+  (global-set-key (kbd "C-;") 'helm-imenu)
 
   (setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
         helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
@@ -379,6 +404,9 @@
 					; Flycheck
 ;; Disabled because it slows things down and crashes my stuff
 ;; (add-hook 'after-init-hook #'global-flycheck-mode)
+(use-package flycheck
+  :config
+  (setq flycheck-check-syntax-automatically '(save mode-enabled idle-change)))
 
 					; Yas (Snippet and template support)
 (use-package yasnippet
@@ -410,11 +438,20 @@
 (require 'ess)
 
                                         ; ado mode for Stata
+;; Add custom imenu support for my uses
+(setq stata-imenu-expression
+      '(("Section" "^\\*! \\(.+\\)" 1)
+        ("Subsection" "^\\*@ \\(.+\\)" 1)))
+
 (add-to-list 'load-path "~/.emacs.d/ado-mode-1.14.1.0/lisp")
 (use-package ado-mode
   :ensure nil
 
   :config
+  ;; Make it so moving by word stops at underscores
+  ;;TODO: Need to figure out a better way. Maybe just change evil-forward-word?
+  (add-hook 'ado-mode-hook (lambda () (modify-syntax-entry ?_ "w")))
+  (add-hook 'ado-mode-hook (lambda () (setq imenu-generic-expression stata-imenu-expression)))
   (run-hooks 'ado-mode-hook))
 
 					; Org-Mode and RefTex set up
@@ -447,6 +484,8 @@
 
   (setq org-list-allow-alphabetical t)
   )
+;; Org mode pandoc docx export
+(setq org-pandoc-options-for-docx '((reference-docx . "\\\\comlexdc\\users\\azhang1\\Pandoc Memo Template.docx")))
 
                                         ; Magit
 (use-package magit
@@ -522,6 +561,9 @@
   (define-key elpy-mode-map (kbd "C-M-h") 'get-help-in-python-shell)
   (elpy-enable)
   )
+;; temp while I figure out how to fix this.
+(elpy-use-cpython "C:\\HOME\\2016-11-10 - ATTACQ Web Scraping\\providerscraper2\\venv\\Scripts\\pythonw.exe")
+;; (elpy-use-cpython "C:\\Users\\azhang1\\AppData\\Local\\Programs\\Python\\Python35\\pythonw.exe")
 
                                         ; ycmd Config for use with company mode
 (use-package ycmd
@@ -661,15 +703,19 @@
 
                                         ; Powerline stuff
 (use-package spaceline
-  :config
+  :init
   (require 'spaceline-config)
   (spaceline-spacemacs-theme)
   (spaceline-helm-mode)
   (setq spaceline-highlight-face-func 'spaceline-highlight-face-evil-state)
   (setq powerline-default-separator 'arrow)
   (spaceline-toggle-buffer-size)
-  (spaceline-compile)
   )
+;; Putting this after as it doesn't seem to run at the correct time right now if I put it in :config 
+(spaceline-compile)
+
+;; Reset gc cons threshold
+(setq gc-cons-threshold 7000000)
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; CUSTOM STUFF. DON'T TOUCH ;;;;;;;;;;;;;;;;;;;;
 (custom-set-variables
@@ -723,12 +769,29 @@
      ("Clean All" "(TeX-clean t)" TeX-run-function nil t :help "Delete generated intermediate and output files")
      ("Other" "" TeX-run-command t t :help "Run an arbitrary command"))))
  '(TeX-source-correlate-mode t)
+ '(ansi-color-faces-vector
+   [default bold shadow italic underline bold bold-italic bold])
  '(ansi-color-names-vector
    ["#242424" "#e5786d" "#95e454" "#cae682" "#8ac6f2" "#333366" "#ccaa8f" "#f6f3e8"])
+ '(ansi-term-color-vector
+   [unspecified "#424242" "#EF9A9A" "#C5E1A5" "#FFEE58" "#64B5F6" "#E1BEE7" "#80DEEA" "#E0E0E0"] t)
+ '(beacon-color "#ec4780")
+ '(custom-safe-themes
+   (quote
+    ("bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" default)))
+ '(fci-rule-color "#37474f")
+ '(highlight-symbol-colors
+   (quote
+    ("#FFEE58" "#C5E1A5" "#80DEEA" "#64B5F6" "#E1BEE7" "#FFCC80")))
+ '(highlight-symbol-foreground-color "#E0E0E0")
+ '(highlight-tail-colors (quote (("#ec4780" . 0) ("#424242" . 100))))
+ '(hl-sexp-background-color "#1c1f26")
  '(org-agenda-files
    (quote
     ("c:/Users/Allan Zhang/Dropbox/School Work/Economic Papers/EconomicPapers.org")))
  '(org-startup-indented t)
+ '(pos-tip-background-color "#3a3a3a")
+ '(pos-tip-foreground-color "#9E9E9E")
  '(preview-default-document-pt 12)
  '(preview-gs-command "c:\\Program Files (x86)\\gs\\gs8.71\\bin\\gswin32c.exe")
  '(preview-gs-options
@@ -736,6 +799,29 @@
     ("-q" "-dNOPAUSE" "-DNOPLATFONTS" "-dPrinted" "-dTextAlphaBits=4" "-dGraphicsAlphaBits=4")))
  '(preview-scale-function 1.5)
  '(reftex-cite-punctuation (quote (", " " \\& " " et al.")))
+ '(tabbar-background-color "#353535")
+ '(vc-annotate-background nil)
+ '(vc-annotate-color-map
+   (quote
+    ((20 . "#f36c60")
+     (40 . "#ff9800")
+     (60 . "#fff59d")
+     (80 . "#8bc34a")
+     (100 . "#81d4fa")
+     (120 . "#4dd0e1")
+     (140 . "#b39ddb")
+     (160 . "#f36c60")
+     (180 . "#ff9800")
+     (200 . "#fff59d")
+     (220 . "#8bc34a")
+     (240 . "#81d4fa")
+     (260 . "#4dd0e1")
+     (280 . "#b39ddb")
+     (300 . "#f36c60")
+     (320 . "#ff9800")
+     (340 . "#fff59d")
+     (360 . "#8bc34a"))))
+ '(vc-annotate-very-old-color nil)
  '(whitspaceespace-display-mappings
    (quote
     ((space-mark 32
@@ -766,3 +852,9 @@
 ;;  '(whitespace-space-before-tab ((t nil)))
 ;;  '(whitespace-tab ((t nil)))
 ;;  '(whitespace-trailing ((t nil))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
